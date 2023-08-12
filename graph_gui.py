@@ -9,18 +9,25 @@ import json
 import logging
 import tkinter as tk
 from tkinter import filedialog, ttk, messagebox
+import pandas as pd
 import plotly.graph_objects as go
 import tkinter as tk
 from tkinter import ttk
 from graph_data_parser import select_file,material_mapping
 from graph_const import material_colors,material_mapping
+import pandas as pd
+import tkinter as tk
+from tkinter import filedialog, messagebox
+from tkinter.ttk import Treeview
 
 # Constants
 NODE_RADIUS_SIZE = 30
 NODE_SYMBOL = 'square'
+tree_view = None
 
 logging.basicConfig(filename='graph_generator.log', level=logging.DEBUG)
-
+graph_json_data = None
+ 
 def load_json_data(data_str):
     try:
         return json.loads(data_str)
@@ -72,7 +79,7 @@ def prepare_hover_text(data):
         if show_gamma_radius.get():
             text += f"<br>Gamma: {item['gamma']}<br>Radius: {item['radius']}"
         if show_criteria.get():
-            text += f"<br>Criteria: {item['description']}"
+            text += f"<br>Criteria: {item['criteria']}"
         text_data.append(text)
     return text_data
 
@@ -110,18 +117,36 @@ def on_select_file():
     try:
         file_path = filedialog.askopenfilename(filetypes=[("Graph files", "*.dat"), ("All files", "*.*")])
         if file_path:
-            json_data = select_file(file_path)
-                    
-            json_input.delete("1.0", tk.END)
-            json_input.insert(tk.END, json_data)
+            # clear previous data in tree view
+            for item in tree_view.get_children():
+                tree_view.delete(item)
             
+            global graph_json_data
+            logging.debug(f"Selected file: {file_path}")
+            json_data = select_file(file_path)
+            # convert JSON data to csv
+            json_data = json.loads(json_data)
+            json_data = pd.json_normalize(json_data)
+            
+            # load structured csv as table in json_input
+            tree_view["columns"] = list(json_data.columns)
+            tree_view["show"] = "headings"
+            for column in tree_view["columns"]:
+                tree_view.heading(column, text=column)
+            for index, row in json_data.iterrows():
+                tree_view.insert("", "end", values=list(row))
+            
+            graph_json_data = json_data.to_json(orient='records')
             json_label['text'] = file_path.split('/')[-1]
     except Exception as e:
         logging.error(f"Error selecting file: {e}")
         messagebox.showerror("Error", "Error selecting file")
 
+
 def on_export_to_json():
-    data_str = json_input.get("1.0", tk.END)
+    data_str = graph_json_data
+    # format json to 4 width indent
+    data_str = json.dumps(json.loads(data_str), indent=4)
     file_path = filedialog.asksaveasfilename(defaultextension=".json", filetypes=[("JSON files", "*.json"), ("All files", "*.*")])
     if file_path:
         with open(file_path, 'w') as file:
@@ -129,15 +154,15 @@ def on_export_to_json():
         messagebox.showinfo("Success", "Graph exported to JSON successfully!")
 
 def adjust_data_based_on_input(data):
-    ignore_z = ignore_node_height.get()
-    if ignore_z:
+    ignore_height = ignore_node_height.get()
+    if ignore_height:
         for item in data:
             item["z"] = 0  # Set Z position to 0 or any other default value
     return data
 
 def on_generate_graph():
     try:
-        data_str = json_input.get("1.0", tk.END)
+        data_str = graph_json_data
         data = json.loads(data_str)
         if not data:
             return
@@ -189,15 +214,19 @@ json_label = ttk.Label(main_frame, text="Graph JSON :")
 json_label.grid(row=0, column=0, sticky=tk.W, pady=5, padx=5)
 json_label['text'] = "Graph JSON :"
 
-json_input = tk.Text(main_frame, height=10, width=60, wrap=tk.WORD, font=("Courier New", 14))
-json_input.grid(row=1, column=0, columnspan=4, pady=5, padx=5, sticky=tk.W+tk.E+tk.N+tk.S)
-scroll_x = tk.Scrollbar(main_frame, orient=tk.HORIZONTAL, command=json_input.xview)
+graph_tree_view = tk.Text(main_frame, height=10, width=60, wrap=tk.WORD, font=("Courier New", 14))
+graph_tree_view.grid(row=1, column=0, columnspan=4, pady=5, padx=5, sticky=tk.W+tk.E+tk.N+tk.S)
+scroll_x = tk.Scrollbar(main_frame, orient=tk.HORIZONTAL, command=graph_tree_view.xview)
 scroll_x.grid(row=2, column=0, columnspan=4, sticky=tk.W+tk.E)
-scroll_y = tk.Scrollbar(main_frame, orient=tk.VERTICAL, command=json_input.yview)
+scroll_y = tk.Scrollbar(main_frame, orient=tk.VERTICAL, command=graph_tree_view.yview)
 scroll_y.grid(row=1, column=4, sticky=tk.N+tk.S)
-json_input['xscrollcommand'] = scroll_x.set
-json_input['yscrollcommand'] = scroll_y.set
-json_input.tag_configure("json", background="yellow")
+graph_tree_view['xscrollcommand'] = scroll_x.set
+graph_tree_view['yscrollcommand'] = scroll_y.set
+graph_tree_view.tag_configure("json", background="yellow")
+
+# Create the Treeview instance
+tree_view = Treeview(graph_tree_view)
+tree_view.pack(side="left", fill="both")
 
 # Configure the rows and columns of the main frame to expand and fill the available space
 main_frame.grid_rowconfigure(1, weight=1)

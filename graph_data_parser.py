@@ -75,6 +75,12 @@ def convert_to_json(graphDataList):
         material_id = int(graphDataList[5].data[i].hex(), 16)
         material_name = material_mapping.get(material_id, "UNKNOWN")
         
+        node_criteria_prefix = "NODECRITERIA_"
+        node_criteria_index = graphDataList[6].data[i].lower().find(node_criteria_prefix.lower())
+        if node_criteria_index != -1:
+            node_criteria = graphDataList[6].data[i][node_criteria_index + len(node_criteria_prefix):]
+        else:
+            node_criteria = ""
         node = {
             "id": node_id,
             "x": graphDataList[2].data[i][0],
@@ -83,7 +89,7 @@ def convert_to_json(graphDataList):
             "gamma": struct.unpack('f', graphDataList[3].data[i])[0],
             "radius": struct.unpack('f', graphDataList[4].data[i])[0],
             "material": material_name,
-            "description": graphDataList[6].data[i] if 'nodecriteria'.lower() in graphDataList[6].data[i].lower() else "",
+            "criteria": node_criteria,
             "edges": connected_edges
         }
         nodes.append(node)
