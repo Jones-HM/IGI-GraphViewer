@@ -30,7 +30,7 @@ class GraphData:
             self.data.append(cleaned_data)
         elif self.data_type == "Real64x3":
             x, y, z = struct.unpack('ddd', raw_data)
-            self.data.append((round(x, 2), round(y, 2), round(z, 2)))
+            self.data.append((round(x, 2), round(y, 2), round(z,6)))
         else:
             self.data.append(raw_data)
         
