@@ -7,19 +7,13 @@ author : @heaven_hm
 
 import json
 import logging
-import os
-import tempfile
 import tkinter as tk
-from tkinter import filedialog, ttk, messagebox, font, Scrollbar
-import webbrowser
+from tkinter import filedialog, ttk, messagebox
 import plotly.graph_objects as go
 import tkinter as tk
 from tkinter import ttk
-from tkinter import font
-from tkinter import Scrollbar
 from graph_data_parser import select_file,material_mapping
 from graph_const import material_colors,material_mapping
-from pygments import highlight
 
 # Constants
 NODE_RADIUS_SIZE = 30
@@ -120,6 +114,8 @@ def on_select_file():
                     
             json_input.delete("1.0", tk.END)
             json_input.insert(tk.END, json_data)
+            
+            json_label['text'] = file_path.split('/')[-1]
     except Exception as e:
         logging.error(f"Error selecting file: {e}")
         messagebox.showerror("Error", "Error selecting file")
@@ -176,7 +172,7 @@ app = tk.Tk()
 app_name = "IGI 3D Graph Generator - HM"
 app.title(app_name)
 app.geometry("700x600")
-app.resizable(False, True)
+app.resizable(True, True)
 
 # Create a notebook (tabs)
 notebook = ttk.Notebook(app)
@@ -189,11 +185,12 @@ settings_frame = ttk.Frame(notebook)
 notebook.add(main_frame, text="Main")
 notebook.add(settings_frame, text="Settings")
 
-# Main Tab
-ttk.Label(main_frame, text="JSON Data:").grid(row=0, column=0, sticky=tk.W, pady=5, padx=5)
+json_label = ttk.Label(main_frame, text="Graph JSON :")
+json_label.grid(row=0, column=0, sticky=tk.W, pady=5, padx=5)
+json_label['text'] = "Graph JSON :"
 
 json_input = tk.Text(main_frame, height=10, width=60, wrap=tk.WORD, font=("Courier New", 14))
-json_input.grid(row=1, column=0, columnspan=4, pady=5, padx=5, sticky=tk.W+tk.E)
+json_input.grid(row=1, column=0, columnspan=4, pady=5, padx=5, sticky=tk.W+tk.E+tk.N+tk.S)
 scroll_x = tk.Scrollbar(main_frame, orient=tk.HORIZONTAL, command=json_input.xview)
 scroll_x.grid(row=2, column=0, columnspan=4, sticky=tk.W+tk.E)
 scroll_y = tk.Scrollbar(main_frame, orient=tk.VERTICAL, command=json_input.yview)
@@ -201,6 +198,14 @@ scroll_y.grid(row=1, column=4, sticky=tk.N+tk.S)
 json_input['xscrollcommand'] = scroll_x.set
 json_input['yscrollcommand'] = scroll_y.set
 json_input.tag_configure("json", background="yellow")
+
+# Configure the rows and columns of the main frame to expand and fill the available space
+main_frame.grid_rowconfigure(1, weight=1)
+main_frame.grid_columnconfigure(0, weight=1)
+
+# Configure the window to resize with the main frame
+app.grid_rowconfigure(0, weight=1)
+app.grid_columnconfigure(0, weight=1)
 
 ttk.Label(main_frame, text="Graph Type:").grid(row=3, column=0, sticky=tk.W, pady=5, padx=5)
 graph_type_combobox = ttk.Combobox(main_frame, values=["3D Scatter", "3D Surface", "3D Line", "3D Mesh"])
@@ -230,7 +235,7 @@ node_radius_entry.insert(0, "50")
 ttk.Label(settings_frame, text="Node Symbol:").grid(row=4, column=0, sticky=tk.W, pady=5, padx=5)
 node_symbol_combobox = ttk.Combobox(settings_frame, values=['circle', 'circle-open', 'cross', 'diamond', 'diamond-open', 'square', 'square-open', 'x'])
 node_symbol_combobox.grid(row=4, column=1, sticky=tk.W, pady=5, padx=5)
-node_symbol_combobox.set("circle")
+node_symbol_combobox.set("square")
 
 
 # Buttons
@@ -238,8 +243,8 @@ button_frame = ttk.Frame(app)
 button_frame.pack(pady=20)
 
 ttk.Button(button_frame, text="Generate Graph", command=on_generate_graph).grid(row=0, column=0, padx=10)
-ttk.Button(button_frame, text="Select Graph File", command=on_select_file).grid(row=0, column=1, padx=10)
-ttk.Button(button_frame, text="Export to JSON", command=on_export_to_json).grid(row=0, column=2, padx=10)
+ttk.Button(button_frame, text="Select Graph", command=on_select_file).grid(row=0, column=1, padx=10)
+ttk.Button(button_frame, text="Export JSON", command=on_export_to_json).grid(row=0, column=2, padx=10)
 ttk.Button(button_frame, text="Help", command=on_help).grid(row=0, column=3, padx=10)
 ttk.Button(button_frame, text="Quit", command=on_quit).grid(row=0, column=4, padx=10)
 
