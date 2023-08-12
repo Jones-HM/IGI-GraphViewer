@@ -2,8 +2,8 @@
 This is Project IGI Graph Generator GUI which generate the 3D graph of the game using the graph data file.
 This also has the option to export the graph data to JSON file.
 This is wriiten in Streamlit framework which is used to create the web app.
-date : 12 - Aug - 2023
-author : @heaven_hm
+date : 12-08-2023
+author : HeavenHM
 """
 
 import os
@@ -101,7 +101,7 @@ def plot_3d(data, plot_type='scatter', symbol=None, show_links=False, show_mater
 
 
 
-def adjust_data_based_on_input(data, node_height):
+def adjust_node_height_data(data, node_height):
     if not node_height:
         for item in data:
             item["z"] = 0  # Set Z position to 0 or any other default value
@@ -161,7 +161,7 @@ def main():
             else:
                 # Adjust data based on user's input
                 data = json.loads(json_data)
-                data = adjust_data_based_on_input(data, st.session_state.node_height)
+                data = adjust_node_height_data(data, st.session_state.node_height)
 
                 # Display the data in a table if the checkbox is checked
                 if st.session_state.show_table_data:
