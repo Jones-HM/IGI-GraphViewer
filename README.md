@@ -6,7 +6,10 @@ This is usefule for the game developers to understand the graph data and visuali
 ![app_main_ui_1](https://github.com/haseeb-heaven/IGI-GraphViewer/blob/main/resources/app_main_ui_1.png?raw=true "")</br>
 ![app_main_ui_2](https://github.com/haseeb-heaven/IGI-GraphViewer/blob/main/resources/app_main_ui_2.png?raw=true "")</br>
 
-## 🚀 Installation Guide 🚀
+## 🚀 Web Application - UI.🚀
+- You can try the Web application of Graph Viewer here : [IGI Graph Viewer Web Application](https://igi-graphviewer-hm.streamlit.app) from this web app you can have all the features of this application hosted.
+
+## 🛠️ Installation Guide 🛠️
 
 To install this project, you need to have Python installed on your system. Then, you can install the required dependencies by running the following command:
 
