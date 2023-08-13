@@ -1,8 +1,6 @@
 import logging
 import struct
 import json
-import tkinter as tk
-from tkinter import filedialog, Text, Button
 from graph_const import material_mapping
 
 class GraphData:
@@ -19,7 +17,7 @@ class GraphData:
     def extract_data(self, binary_data, start_index):
         index = binary_data.find(bytes.fromhex(self.hex_bytes), start_index)  # Search for the full 4-byte hex signature
         if index == -1:
-            logging.info(f"Hex signature {self.hex_bytes} not found after index {start_index}.")
+            #logging.info(f"Hex signature {self.hex_bytes} not found after index {start_index}.")
             return start_index  # If not found, return the same index
         data_start_index = index + 8  # Adjusting for the 4 bytes offset
         end_index = data_start_index + self.size
@@ -108,9 +106,6 @@ def select_file(filename):
         json_data = convert_to_json(graphDatList)
         
     return json_data
-
-def setup_logging():
-    logging.basicConfig(filename='graph_data.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def read_binary_file(filename):
     try:

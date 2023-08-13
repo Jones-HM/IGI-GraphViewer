@@ -1,7 +1,7 @@
 """
-This is Project IGI Graph Generator GUI which generate the 3D graph of the game using the graph data file.
+This is Project IGI Graph Viewer GUI which generate the 3D graph of the game using the graph data file.
 This also has the option to export the graph data to JSON file.
-date : 12 - Aug - 2023
+date : 12/08/2023
 author : @heaven_hm
 """
 
@@ -13,7 +13,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import tkinter as tk
 from tkinter import ttk
-from graph_data_parser import select_file,material_mapping
+from libs.graph_data_parser import select_file,material_mapping
 from graph_const import material_colors,material_mapping
 import pandas as pd
 import tkinter as tk

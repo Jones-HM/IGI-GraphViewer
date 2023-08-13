@@ -1,8 +1,8 @@
 """
-This is Project IGI Graph Generator GUI which generate the 3D graph of the game using the graph data file.
+This is Project IGI Graph Viewer GUI which generate the 3D graph of the game using the graph data file.
 This also has the option to export the graph data to JSON file.
 This is wriiten in Streamlit framework which is used to create the web app.
-date : 12-08-2023
+date : 12/08/2023
 author : HeavenHM
 """
 
@@ -11,7 +11,8 @@ import streamlit as st
 import plotly.graph_objects as go
 import json
 import logging
-from graph_data_parser import select_file
+from libs.graph_data_parser import select_file
+from libs.graph_area_parser import IGI_Graph_Area
 from graph_const import material_colors, material_mapping
 import tempfile
 import pandas as pd
@@ -42,7 +43,7 @@ def prepare_node_colors_and_sizes(data, node_radius_size):
         sizes.append(item['radius'] * node_radius_size)
     return colors, sizes
 
-def prepare_hover_text(data, show_links, show_material, show_gamma_radius, show_criteria):
+def prepare_hover_text(data, show_links, show_material, show_gamma_radius, show_criteria, show_position):
     text_data = []
     for item in data:
         text = f"Node ID: {item['id']}"
@@ -54,10 +55,22 @@ def prepare_hover_text(data, show_links, show_material, show_gamma_radius, show_
             text += f"<br>Gamma: {item['gamma']}<br>Radius: {item['radius']}"
         if show_criteria:
             text += f"<br>Criteria: {item['criteria']}"
+        if show_position:
+            text += f"<br>Position: ({item['x']}, {item['y']}, {item['z']})"
         text_data.append(text)
     return text_data
 
-def plot_3d(data, plot_type='scatter', symbol=None, show_links=False, show_material=False, show_gamma_radius=False, show_criteria=False, node_radius_size=50):
+def plot_graph(data):
+    if st.session_state.graph_type == "3D Scatter":
+        plot_3d(data, plot_type='scatter', symbol=st.session_state.node_symbol, show_links=st.session_state.show_links, show_material=st.session_state.show_material, show_gamma_radius=st.session_state.show_gamma_radius, show_criteria=st.session_state.show_criteria, show_position=st.session_state.node_position, node_radius_size=st.session_state.node_radius_size, scene_aspectmode=st.session_state.scene_aspectmode)
+    elif st.session_state.graph_type == "3D Surface":
+        plot_3d(data, plot_type='surface', symbol=st.session_state.node_symbol, show_links=st.session_state.show_links, show_material=st.session_state.show_material, show_gamma_radius=st.session_state.show_gamma_radius, show_criteria=st.session_state.show_criteria, show_position=st.session_state.node_position, node_radius_size=st.session_state.node_radius_size, scene_aspectmode=st.session_state.scene_aspectmode)
+    elif st.session_state.graph_type == "3D Line":
+        plot_3d(data, plot_type='line', symbol=st.session_state.node_symbol, show_links=st.session_state.show_links, show_material=st.session_state.show_material, show_gamma_radius=st.session_state.show_gamma_radius, show_criteria=st.session_state.show_criteria, show_position=st.session_state.node_position, node_radius_size=st.session_state.node_radius_size, scene_aspectmode=st.session_state.scene_aspectmode)
+    elif st.session_state.graph_type == "3D Mesh":
+        plot_3d(data, plot_type='mesh', symbol=st.session_state.node_symbol, show_links=st.session_state.show_links, show_material=st.session_state.show_material, show_gamma_radius=st.session_state.show_gamma_radius, show_criteria=st.session_state.show_criteria, show_position=st.session_state.node_position, node_radius_size=st.session_state.node_radius_size, scene_aspectmode=st.session_state.scene_aspectmode)
+
+def plot_3d(data, plot_type='scatter', symbol=None, show_links=False, show_material=False, show_gamma_radius=False, show_criteria=False,show_position=False, node_radius_size=50,scene_aspectmode='cube'):
     logging.info(f"Generating 3D {plot_type} plot")
     x_data = [item['x'] for item in data]
     y_data = [item['y'] for item in data]
@@ -66,13 +79,12 @@ def plot_3d(data, plot_type='scatter', symbol=None, show_links=False, show_mater
     # Get edges only if show_links is True
     edge_x, edge_y, edge_z = get_edges(data) if show_links else ([], [], [])
     
-    hover_texts = prepare_hover_text(data, show_links, show_material, show_gamma_radius, show_criteria)
+    hover_texts = prepare_hover_text(data, show_links, show_material, show_gamma_radius, show_criteria,show_position)
     colors, sizes = prepare_node_colors_and_sizes(data, node_radius_size)
     
     fig = go.Figure()
     fig.update_layout(scene=dict(xaxis=dict(title=dict(text='X')), yaxis=dict(title=dict(text='Y')), zaxis=dict(title=dict(text='Z'))))
-    #fig.layout.scene.aspectmode = 'cube' # Make the plot aspect ratio 1:1:1
-    fig.layout.scene.aspectmode = 'data' # Make the plot scalt to data along the axes
+    fig.layout.scene.aspectmode = scene_aspectmode
     fig.layout.width = 800
     fig.layout.height = 600
     
@@ -108,7 +120,7 @@ def adjust_node_height_data(data, node_height):
     return data
 
 def main():
-    st.title('IGI 3D Graph Generator - HM')
+    #st.title('Project IGI Graph Viewer')
 
     # Initialize session state variables if they don't exist
     if 'show_links' not in st.session_state:
@@ -129,27 +141,40 @@ def main():
         st.session_state.graph_type = '3D Scatter'
     if 'node_symbol' not in st.session_state:
         st.session_state.node_symbol = 'circle'
+    if 'node_position' not in st.session_state:
+        st.session_state.node_position = False
+    if 'scene_aspectmode' not in st.session_state:
+        st.session_state.scene_aspectmode = 'cube'
 
-    st.sidebar.header('IGI 3D Graph Generator')
-    st.sidebar.markdown('This is Project IGI Graph Generator GUI which generate the 3D graph of the game using the graph data file.')
+    # Sidebar header
+    st.sidebar.header('Project IGI Graph Viewer')
+    st.sidebar.markdown('This is Project IGI Graph Viever which can view the 3D graph of the game using the graph data file.')
 
     # Sidebar settings
-    with st.sidebar.expander('Settings',expanded=True):
-        st.header('Settings')
-        st.session_state.show_links = st.checkbox('Node Links', st.session_state.show_links)
+    with st.sidebar.expander('Legend Settings',expanded=False):
         st.session_state.show_material = st.checkbox('Node Material', st.session_state.show_material)
         st.session_state.show_gamma_radius = st.checkbox('Node Gamma/Radius', st.session_state.show_gamma_radius)
         st.session_state.show_criteria = st.checkbox('Node Criteria', st.session_state.show_criteria)
+        st.session_state.node_position = st.checkbox('Node Position', st.session_state.node_position)
+        
+    with st.sidebar.expander('View Settings',expanded=False):
         st.session_state.show_table_data = st.checkbox('Table View', st.session_state.show_table_data)
+        st.session_state.show_links = st.checkbox('Node Links', st.session_state.show_links)
+        st.session_state.single_space = st.checkbox('Single Space', False)
+        st.session_state.scene_aspectmode = st.selectbox('Aspect Mode', ['auto', 'cube', 'data', 'manual'], index=['auto', 'cube', 'data', 'manual'].index(st.session_state.scene_aspectmode))
+    
+    with st.sidebar.expander('Node Settings',expanded=False):
         st.session_state.node_height = st.checkbox('Node Height', st.session_state.node_height)
         st.session_state.node_radius_size = st.slider("Node Radius Size:", 10, 100, st.session_state.node_radius_size)
         st.session_state.graph_type = st.selectbox('Graph Type', ['3D Scatter', '3D Surface', '3D Line', '3D Mesh'], index=['3D Scatter', '3D Surface', '3D Line', '3D Mesh'].index(st.session_state.graph_type))
         st.session_state.node_symbol = st.selectbox('Node Symbol', ['circle', 'circle-open', 'cross', 'diamond', 'diamond-open', 'square', 'square-open', 'x'], index=['circle', 'circle-open', 'cross', 'diamond', 'diamond-open', 'square', 'square-open', 'x'].index(st.session_state.node_symbol))
-        
-    uploaded_file = st.file_uploader('Upload Graph File', type=['dat'])
 
-    if uploaded_file:
-        # Save the uploaded file to a temporary location
+    # File uploader
+    uploaded_files = st.file_uploader('Upload Graph Files', type=['dat'], accept_multiple_files=True)
+
+    all_data = []
+
+    for uploaded_file in uploaded_files:
         with tempfile.NamedTemporaryFile(delete=False) as temp_file:
             temp_file.write(uploaded_file.getvalue())
             uploaded_path = temp_file.name
@@ -157,32 +182,26 @@ def main():
         try:
             json_data = select_file(uploaded_path)
             if not json_data:
-                st.error("Failed to parse the uploaded file.")
+                st.error(f"Failed to parse the uploaded file: {uploaded_file.name}")
             else:
-                # Adjust data based on user's input
                 data = json.loads(json_data)
                 data = adjust_node_height_data(data, st.session_state.node_height)
-
-                # Display the data in a table if the checkbox is checked
+                all_data.append(data)
+            
+             # Display the data in a table if the checkbox is checked
                 if st.session_state.show_table_data:
                     df = pd.DataFrame(data)
                     st.subheader('Graph Data')
                     st.dataframe(df)
-
-                # Automatically generate the graph when any of the settings change
-                if st.session_state.graph_type == "3D Scatter":
-                    plot_3d(data, plot_type='scatter', symbol=st.session_state.node_symbol, show_links=st.session_state.show_links, show_material=st.session_state.show_material, show_gamma_radius=st.session_state.show_gamma_radius, show_criteria=st.session_state.show_criteria, node_radius_size=st.session_state.node_radius_size)
-                elif st.session_state.graph_type == "3D Surface":
-                    plot_3d(data, plot_type='surface', symbol=st.session_state.node_symbol, show_links=st.session_state.show_links, show_material=st.session_state.show_material, show_gamma_radius=st.session_state.show_gamma_radius, show_criteria=st.session_state.show_criteria, node_radius_size=st.session_state.node_radius_size)
-                elif st.session_state.graph_type == "3D Line":
-                    plot_3d(data, plot_type='line', symbol=st.session_state.node_symbol, show_links=st.session_state.show_links, show_material=st.session_state.show_material, show_gamma_radius=st.session_state.show_gamma_radius, show_criteria=st.session_state.show_criteria, node_radius_size=st.session_state.node_radius_size)
-                elif st.session_state.graph_type == "3D Mesh":
-                    plot_3d(data, plot_type='mesh', symbol=st.session_state.node_symbol, show_links=st.session_state.show_links, show_material=st.session_state.show_material, show_gamma_radius=st.session_state.show_gamma_radius, show_criteria=st.session_state.show_criteria, node_radius_size=st.session_state.node_radius_size)
         finally:
-            # Clean up the temporary file
             os.remove(uploaded_path)
+
+    if st.session_state.single_space:
+        combined_data = [item for sublist in all_data for item in sublist]
+        plot_graph(combined_data)
     else:
-        st.info('Upload a graph file to generate a graph.')
+        for data in all_data:
+            plot_graph(data)
 
 if __name__ == "__main__":
     main()
