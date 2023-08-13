@@ -136,11 +136,11 @@ def main():
     if 'node_height' not in st.session_state:
         st.session_state.node_height = False
     if 'node_radius_size' not in st.session_state:
-        st.session_state.node_radius_size = 50
+        st.session_state.node_radius_size = 30
     if 'graph_type' not in st.session_state:
         st.session_state.graph_type = 'Scatter'
     if 'node_symbol' not in st.session_state:
-        st.session_state.node_symbol = 'circle'
+        st.session_state.node_symbol = 'square'
     if 'node_position' not in st.session_state:
         st.session_state.node_position = False
     if 'scene_aspectmode' not in st.session_state:
@@ -149,6 +149,8 @@ def main():
         st.session_state.game_level = 1
     if 'show_area_data' not in st.session_state:
         st.session_state.show_area_data = False
+    if 'single_space' not in st.session_state:
+        st.session_state.single_space = False
 
     # Sidebar header
     st.sidebar.header('Project IGI Graph Viewer')
