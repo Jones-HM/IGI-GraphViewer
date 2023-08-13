@@ -28,11 +28,11 @@ This project uses the following technologies:
 - Pandas
 
 ## 🔥 Features 🔥
--**Generate 3D graphs**(Scatter, Line, Mesh) from `.dat` files like `Graph4019.dat`.
--**Analyze**Nodes, Graphs, Areas, Links, Edges from the data file.
--**Display**table format of Graph Areas and Nodes, showcasing their position and material.
--**Draw legends**for data visualization.
--**User-friendly settings**for customization.
+-**Generate 3D graphs**(Scatter, Line, Mesh) from `.dat` files like `Graph4019.dat`.</br>
+-**Analyze**Nodes, Graphs, Areas, Links, Edges from the data file.</br>
+-**Display**table format of Graph Areas and Nodes, showcasing their position and material.</br>
+-**Draw legends**for data visualization.</br>
+-**User-friendly settings**for customization.</br>
 
 With these features, you can easily visualize and analyze the data from Project IGI in a user-friendly and customizable way. The ability to generate 3D graphs and display data in a table format allows for a deeper understanding of the game's data. The user-friendly settings make it easy to customize the visualization to your needs. Overall, this web app provides a powerful tool for analyzing and visualizing Project IGI data. 😊
 
